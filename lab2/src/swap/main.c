@@ -1,8 +1,7 @@
 #include <stdio.h>
+#include "swap.c"
 
-#include "swap.h"
-
-int main()
+int main(int argc, char **argv)
 {
 	char ch1 = 'a';
 	char ch2 = 'b';
