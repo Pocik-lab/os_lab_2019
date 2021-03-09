@@ -12,4 +12,3 @@ let "var1=var1/string1"
 
 echo "numbers : $string1"
 echo "res = $var1"
-
