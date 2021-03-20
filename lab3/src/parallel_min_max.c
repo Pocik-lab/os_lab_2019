@@ -15,16 +15,18 @@
 #include "find_min_max.h"
 #include "utils.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int seed = -1;
   int array_size = -1;
   int pnum = -1;
   bool with_files = false;
 
-  while (true) {
-    int current_optind = optind ? optind : 1;
-
-    static struct option options[] = {{"seed", required_argument, 0, 0},
+  while (true) 
+  {
+  	int current_optind = optind ? optind : 1;
+	
+	static struct option options[] = {{"seed", required_argument, 0, 0},
                                       {"array_size", required_argument, 0, 0},
                                       {"pnum", required_argument, 0, 0},
                                       {"by_files", no_argument, 0, 'f'},
@@ -33,24 +35,42 @@ int main(int argc, char **argv) {
     int option_index = 0;
     int c = getopt_long(argc, argv, "f", options, &option_index);
 
-    if (c == -1) break;
+    if (c == -1)
+    	break;
 
-    switch (c) {
+    switch (c) 
+    {
       case 0:
-        switch (option_index) {
+        switch (option_index) 
+        {
           case 0:
             seed = atoi(optarg);
             // your code here
+            if (seed <= 0)
+            {
+            	printf("seed should be positive!\n\n")
+		return 1;
+            }
             // error handling
             break;
           case 1:
             array_size = atoi(optarg);
             // your code here
+	    if (array_size <= 0)
+            {
+		printf("array_size should be positive!\n\n");
+		return 1;
+            }
             // error handling
             break;
           case 2:
             pnum = atoi(optarg);
             // your code here
+	    if (pnum <= 0)
+            {
+		printf("pnum should be positive!\n\n");
+		return 1;
+            }
             // error handling
             break;
           case 3:
@@ -73,7 +93,8 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (optind < argc) {
+  if (optind < argc) 
+  {
     printf("Has at least one no option argument\n");
     return 1;
   }
@@ -86,57 +107,94 @@ int main(int argc, char **argv) {
 
   int *array = malloc(sizeof(int) * array_size);
   GenerateArray(array, array_size, seed);
+
   int active_child_processes = 0;
 
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
 
-  for (int i = 0; i < pnum; i++) {
+  int pipefd[2];
+  pipe(pipefd);  
+  int number_segment = array_size / pnum;
+
+  for (int i = 0; i < pnum; i++)
+  {
     pid_t child_pid = fork();
-    if (child_pid >= 0) {
+    if (child_pid >= 0)
+    {
       // successful fork
       active_child_processes += 1;
-      if (child_pid == 0) {
+      if (child_pid == 0)
+      {
         // child process
-
         // parallel somehow
-
-        if (with_files) {
+	struct MinMax MyMinMax;
+        if (i != pnum - 1)
+        {
+        	MyMinMax = GetMinMax(array, i * numSegment, (i+1) * numSegment)
+        }
+	else
+		MyMinMax = GetMinMax(array,i * numSegment, array_size);
+        if (with_files)
+	{
           // use files here
-        } else {
+	  FILE* MyFile = fopen("task.txt", "a");
+	  fwrite(&MyMinMax, sizeof(strucy MinMax), 1, MyFile);
+	  fclose(file);
+        } 
+        else 
+        {
           // use pipe here
+	  write(pipefd[1], &MyMinMax, sizeof(struct MinMax));
         }
         return 0;
       }
 
-    } else {
+    }
+    else
+    {
       printf("Fork failed!\n");
       return 1;
     }
   }
 
-  while (active_child_processes > 0) {
+  while (active_child_processes > 0)
+  {
     // your code here
-
+    close(pipefd[1]);
+    wait(NULL);
     active_child_processes -= 1;
   }
 
   struct MinMax min_max;
   min_max.min = INT_MAX;
   min_max.max = INT_MIN;
-
-  for (int i = 0; i < pnum; i++) {
+  
+  for (int i = 0; i < pnum; i++) 
+  {
     int min = INT_MAX;
     int max = INT_MIN;
 
-    if (with_files) {
+    if (with_files)
+    {
       // read from files
-    } else {
+      FILE* MyFile = fopen("task.txt", "r");
+      fseek(MyFile, i * sizeof(struct MinMax), SEEK_SET);
+      fread(&MyMinMax, sizeof(struct MinMax), 1, MyFile);
+      fclose(MyFile);	
+    } 
+    else
+    {
       // read from pipes
+      read(pipefd[0], &MyMinMax, sizeof(struct MinMax));
     }
-
-    if (min < min_max.min) min_max.min = min;
-    if (max > min_max.max) min_max.max = max;
+    min = MyMinMax.min;
+    max = MyMinMax.max;
+	
+    if (min < min_max.min)
+   	 min_max.min = min;
+    if (max > min_max.max)
+    	min_max.max = max;
   }
 
   struct timeval finish_time;
