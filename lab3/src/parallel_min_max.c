@@ -129,12 +129,14 @@ int main(int argc, char **argv)
         // child process
         // parallel somehow
 	struct MinMax MyMinMax;
+	      
         if (i != pnum - 1)
         {
         	MyMinMax = GetMinMax(array, i * numSegment, (i+1) * numSegment)
         }
 	else
 		MyMinMax = GetMinMax(array,i * numSegment, array_size);
+	      
         if (with_files)
 	{
           // use files here
@@ -175,6 +177,8 @@ int main(int argc, char **argv)
     int min = INT_MAX;
     int max = INT_MIN;
 
+    struct MinMax MyMinMax;	  
+	  
     if (with_files)
     {
       // read from files
