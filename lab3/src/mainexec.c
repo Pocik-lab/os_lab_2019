@@ -9,12 +9,10 @@ int main(int argc, char *argv[])
 
 	if (pid == 0)
 	{
-	execlp("main_min_max",argv[0],argv[1], NULL);
+	execl("main_min_max"," ",argv[1],argv[2], NULL);
 	}
 	else
 	{
-		printf("error");
+		return 0;
 	}
-
-	return 0;
 }
