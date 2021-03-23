@@ -48,7 +48,7 @@ int main(int argc, char **argv)
             // your code here
             if (seed <= 0)
             {
-            	printf("seed should be positive!\n\n")
+            	printf("seed should be positive!\n\n");
 		return 1;
             }
             // error handling
@@ -132,17 +132,17 @@ int main(int argc, char **argv)
 	      
         if (i != pnum - 1)
         {
-        	MyMinMax = GetMinMax(array, i * numSegment, (i+1) * numSegment)
+        	MyMinMax = GetMinMax(array, i * number_segment, (i+1) * number_segment);
         }
 	else
-		MyMinMax = GetMinMax(array,i * numSegment, array_size);
+		MyMinMax = GetMinMax(array,i * number_segment, array_size);
 	      
         if (with_files)
 	{
           // use files here
 	  FILE* MyFile = fopen("task.txt", "a");
-	  fwrite(&MyMinMax, sizeof(strucy MinMax), 1, MyFile);
-	  fclose(file);
+	  fwrite(&MyMinMax, sizeof(struct MinMax), 1, MyFile);
+	  fclose(MyFile);
         } 
         else 
         {
