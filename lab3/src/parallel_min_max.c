@@ -75,6 +75,7 @@ int main(int argc, char **argv)
             break;
           case 3:
             with_files = true;
+	    printf("ya v keise");
             break;
 
           defalut:
