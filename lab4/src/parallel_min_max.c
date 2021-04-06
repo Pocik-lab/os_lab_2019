@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -15,12 +16,18 @@
 #include "find_min_max.h"
 #include "utils.h"
 
+
+
 int main(int argc, char **argv)
 {
   int seed = -1;
   int array_size = -1;
   int pnum = -1;
+<<<<<<< HEAD
   int alarm_time = 0;
+=======
+  int alarm_time = -1;
+>>>>>>> a612992efe53c1c357f5af6de9773212accf7dd7
   bool with_files = false;
 
   while (true) 
@@ -31,7 +38,11 @@ int main(int argc, char **argv)
                                       {"array_size", required_argument, 0, 0},
                                       {"pnum", required_argument, 0, 0},
 				      {"timeout", required_argument, 0, 0},
+<<<<<<< HEAD
 				      {"by_files", no_argument, 0, "f"},
+=======
+				      {"by_files", no_argument, 0, 'f'},
+>>>>>>> a612992efe53c1c357f5af6de9773212accf7dd7
                                       {0, 0, 0, 0}};
 
     int option_index = 0;
@@ -77,7 +88,11 @@ int main(int argc, char **argv)
             break;
 	  case 3:
 	    alarm_time = atoi(optarg);
+<<<<<<< HEAD
 	    if (alarm_time < 0)
+=======
+	    if (alarm_time <= 0)
+>>>>>>> a612992efe53c1c357f5af6de9773212accf7dd7
 	    {
 		    printf("alarm_time should be positive!\n\n");
 		    return 1;
@@ -128,8 +143,12 @@ int main(int argc, char **argv)
   int number_segment = array_size / pnum;
 
   for (int i = 0; i < pnum; i++)
+<<<<<<< HEAD
   {
 	pid_t wait_child;  
+=======
+  {  
+>>>>>>> a612992efe53c1c357f5af6de9773212accf7dd7
     	pid_t child_pid = fork();
     
 	if (child_pid >= 0)
@@ -162,7 +181,11 @@ int main(int argc, char **argv)
 				// use pipe here
 				write(pipefd[1], &MyMinMax, sizeof(struct MinMax));
 			}
+<<<<<<< HEAD
 			return 0;
+=======
+			return 2;
+>>>>>>> a612992efe53c1c357f5af6de9773212accf7dd7
 		}
 	}
     else
@@ -175,8 +198,15 @@ int main(int argc, char **argv)
   while (active_child_processes > 0)
   {
     // your code here
+    int status;
     close(pipefd[1]);
+<<<<<<< HEAD
     waitpid(NULL);
+=======
+    waitpid(-1, &status, WNOHANG);
+    printf("\nexit normally? %s\n", (WIFEXITED(status) ? "true" : "false"));
+    printf("child process exit code = %i\n", WEXITSTATUS(status));
+>>>>>>> a612992efe53c1c357f5af6de9773212accf7dd7
     active_child_processes -= 1;
   }
 
