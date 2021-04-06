@@ -1,10 +1,11 @@
 CC=gcc
 CFLAGS=-I.
 
-all: utils.o find_min_max.o utils.h find_min_max.h parallel_min_max.o sequential_min_max.o mainexec.o
+all: utils.o find_min_max.o parallel_min_max.o sequential_min_max.o mainexec.o
 	$(CC) -o main_min_max find_min_max.o utils.o sequential_min_max.o $(CFLAGS)
 	$(CC) -o mainparal parallel_min_max.o utils.o find_min_max.o $(CFLAGS)
-	$(CC) -o mainexec mainexec.o
+	$(CC) -o mainexec mainexec.o $(CFLAGS)
+
 mainexec: mainexec.o
 	$(CC) -o mainexec mainexec.o $(CFLAGS)
 
