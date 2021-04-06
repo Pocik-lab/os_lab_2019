@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -15,11 +16,14 @@
 #include "find_min_max.h"
 #include "utils.h"
 
+
+
 int main(int argc, char **argv)
 {
   int seed = -1;
   int array_size = -1;
   int pnum = -1;
+  int alarm_time = -1;
   bool with_files = false;
 
   while (true) 
@@ -29,7 +33,8 @@ int main(int argc, char **argv)
 	static struct option options[] = {{"seed", required_argument, 0, 0},
                                       {"array_size", required_argument, 0, 0},
                                       {"pnum", required_argument, 0, 0},
-                                      {"by_files", no_argument, 0, 'f'},
+				      {"timeout", required_argument, 0, 0},
+				      {"by_files", no_argument, 0, 'f'},
                                       {0, 0, 0, 0}};
 
     int option_index = 0;
@@ -73,10 +78,17 @@ int main(int argc, char **argv)
             }
             // error handling
             break;
-          case 3:
-            with_files = true;
-	    printf("ya v keise");
-            break;
+	  case 3:
+	    alarm_time = atoi(optarg);
+	    if (alarm_time <= 0)
+	    {
+		    printf("alarm_time should be positive!\n\n");
+		    return 1;
+	    }
+	    break;
+	  case 4:
+	    with_files = true;
+    	    break;	    
 
           defalut:
             printf("Index %d is out of options\n", option_index);
@@ -119,41 +131,42 @@ int main(int argc, char **argv)
   int number_segment = array_size / pnum;
 
   for (int i = 0; i < pnum; i++)
-  {
-    pid_t child_pid = fork();
-    if (child_pid >= 0)
-    {
-      // successful fork
-      active_child_processes += 1;
-      if (child_pid == 0)
-      {
-        // child process
-        // parallel somehow
-	struct MinMax MyMinMax;
-	      
-        if (i != pnum - 1)
-        {
-        	MyMinMax = GetMinMax(array, i * number_segment, (i+1) * number_segment);
-        }
-	else
-		MyMinMax = GetMinMax(array,i * number_segment, array_size);
-	      
-        if (with_files)
+  {  
+    	pid_t child_pid = fork();
+    
+	if (child_pid >= 0)
 	{
-          // use files here
-	  FILE* MyFile = fopen("task.txt", "a");
-	  fwrite(&MyMinMax, sizeof(struct MinMax), 1, MyFile);
-	  fclose(MyFile);
-        } 
-        else 
-        {
-          // use pipe here
-	  write(pipefd[1], &MyMinMax, sizeof(struct MinMax));
-        }
-        return 0;
-      }
-
-    }
+		// successful fork
+		active_child_processes += 1;
+		
+		if (child_pid == 0)
+		{
+			// child process
+			// parallel somehow
+			struct MinMax MyMinMax;
+	      
+			if (i != pnum - 1)
+			{
+				MyMinMax = GetMinMax(array, i * number_segment, (i+1) * number_segment);
+			}
+			else
+				MyMinMax = GetMinMax(array,i * number_segment, array_size);
+	      
+			if (with_files)
+			{
+				// use files here
+				FILE* MyFile = fopen("task.txt", "a");
+				fwrite(&MyMinMax, sizeof(struct MinMax), 1, MyFile);
+				fclose(MyFile);
+			} 
+			else 
+			{
+				// use pipe here
+				write(pipefd[1], &MyMinMax, sizeof(struct MinMax));
+			}
+			return 2;
+		}
+	}
     else
     {
       printf("Fork failed!\n");
@@ -164,8 +177,11 @@ int main(int argc, char **argv)
   while (active_child_processes > 0)
   {
     // your code here
+    int status;
     close(pipefd[1]);
-    wait(NULL);
+    waitpid(-1, &status, WNOHANG);
+    printf("\nexit normally? %s\n", (WIFEXITED(status) ? "true" : "false"));
+    printf("child process exit code = %i\n", WEXITSTATUS(status));
     active_child_processes -= 1;
   }
 
