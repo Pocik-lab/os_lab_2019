@@ -17,29 +17,41 @@
 #include "utils.h"
 
 pid_t* ChildPid;
-int I;
+int active_child_processes = 0;
+int pnum;
 
 void child_killer(int argo)
 {
   int status;
-  waitpid(-1, &status, WNOHANG);
   int is_killed = -1;
-  is_killed = kill(ChildPid[I],SIGTERM);
-  if (is_killed == 0)
+  for (int i =0 ; i<pnum; i++)
   {
-    printf("\nChild %d was killed\n", ChildPid[I]);
-  }
-  else
-  {
-    printf("\nChild %d wasn't killed\n", ChildPid[I]);
-  }
+    int result = waitpid(ChildPid[i], &status, WNOHANG);
+        if (result == 0)
+        {
+          is_killed = kill(ChildPid[i], SIGKILL);
+          if (is_killed == 0)
+          {
+            printf("\nChild %d was killed\n", ChildPid[i]);
+          }
+          else
+          {
+            printf("\nChild %d wasn't killed\n", ChildPid[i]);
+          }
+        } 
+        else 
+        {
+            printf("%d is finished\n", ChildPid[i]);
+            active_child_processes--;
+        }
+    }
 }
 
 int main(int argc, char **argv)
 {
   int seed = -1;
   int array_size = -1;
-  int pnum = -1;
+  pnum = -1;
   int alarm_time = -1;
   bool with_files = false;
 
@@ -138,8 +150,6 @@ int main(int argc, char **argv)
   int *array = malloc(sizeof(int) * array_size);
   GenerateArray(array, array_size, seed);
 
-  int active_child_processes = 0;
-
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
 
@@ -151,10 +161,10 @@ int main(int argc, char **argv)
   for (int i = 0; i < pnum; i++)
   {  
     	pid_t child_pid = fork();
-      ChildPid[i] = child_pid;
 	if (child_pid >= 0)
 	{
 		// successful fork
+    ChildPid[i] = child_pid;
 		active_child_processes += 1;
 		
 		if (child_pid == 0)
@@ -176,13 +186,14 @@ int main(int argc, char **argv)
 				FILE* MyFile = fopen("task.txt", "a");
 				fwrite(&MyMinMax, sizeof(struct MinMax), 1, MyFile);
 				fclose(MyFile);
+        exit(0);
 			} 
 			else 
 			{
 				// use pipe here
 				write(pipefd[1], &MyMinMax, sizeof(struct MinMax));
+        exit(0);
 			}
-      sleep(30);
 			return 0;
 		}
 	}
@@ -193,22 +204,19 @@ int main(int argc, char **argv)
     }
   }
 
-for (int i = 0; i < pnum; i++)
-{
-  I = i;
   if(alarm_time != -1)
   {
-  alarm(alarm_time);
   signal(SIGALRM, child_killer);
+  alarm(alarm_time);
+  pause();
   }
-}
 
 
   while (active_child_processes > 0)
   {
     // your code here
-    int status;
     close(pipefd[1]);
+    wait(NULL);
     active_child_processes -= 1;
   }
 
@@ -257,5 +265,6 @@ for (int i = 0; i < pnum; i++)
   printf("Max: %d\n", min_max.max);
   printf("Elapsed time: %fms\n", elapsed_time);
   fflush(NULL);
+
   return 0;
 }
