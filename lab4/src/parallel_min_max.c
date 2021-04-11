@@ -156,6 +156,7 @@ int main(int argc, char **argv)
   int pipefd[2];
   pipe(pipefd);  
   int number_segment = array_size / pnum;
+  
   ChildPid = malloc(sizeof(int) * pnum);
 
   for (int i = 0; i < pnum; i++)
