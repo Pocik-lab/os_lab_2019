@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     }
   }
 
-  for (uint32_t i = 0; i < threads_num; i++) 
+  for (uint32_t i = 0; i < pnum; i++) 
   {
     pthread_join(threads[i], NULL);
   }
