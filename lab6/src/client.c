@@ -89,7 +89,7 @@ bool ConvertStringToUI64(const char *str, uint64_t *val)
 int main(int argc, char **argv) {
   uint64_t k = -1;
   uint64_t mod = -1;
-  //Ограничение символов ASCII - 255
+  //Потому что 255 - максимальная длина имени файла
   char servers[255] = {'\0'}; // TODO: explain why 255
 
   while (true) 
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
   struct Server *to = malloc(sizeof(struct Server) * servers_num);
   for (int i = 0; i < servers_num; i++)
   {
-      fscanf(fp, "%s : %d\n", to[i].ip, &to[i].port);
+      fscanf(fp, "%s : %d\n", &to[i].ip, &to[i].port);
   }
 
   // TODO: work continiously, rewrite to make parallel
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
   {
     //Получает информацию о хосте по его имени. Результат работы помещается в специальную структуру hostent
     //В эту функцию надо передать имя хоста. Если функция выполнится неудачно или с ошибкой, то вернется NULL. Иначе указатель на структуру. Вы не должные изменять эту структуру.
-    //Структура hostent используется функциями, чтобы хранить информацию о хосте: его имя, тип, IP адрес, и т.д. Вы никогда не должны пытаться изменять эту структуру или освобождать любой из компонентов. Кроме того, только одна копия структуры hostent должна быть связана с потоком.
+    //Структура hostent используется функциями, чтобы хранить информацию о хосте: его имя, тип,IP адрес, и т.д. Вы никогда не должны пытаться изменять эту структуру или освобождать любой из компонентов. Кроме того, только одна копия структуры hostent должна быть связана с потоком.
     
     struct hostent *hostname = gethostbyname(to[i].ip);
     if (hostname == NULL)
